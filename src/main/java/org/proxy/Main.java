@@ -29,6 +29,7 @@ public class Main {
                     .setMaxRequestRetry(1)
                     .setMaxConnections(500)
                     .setMaxConnectionsPerHost(200)
+                    .setResponseBodyPartFactory(AsyncHttpClientConfig.ResponseBodyPartFactory.LAZY)
                     .build();
             return asyncHttpClient(config);
         } catch (SSLException e) {

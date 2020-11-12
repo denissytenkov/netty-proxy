@@ -1,11 +1,9 @@
 package org.proxy.server;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
-import io.netty.util.CharsetUtil;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.Dsl;
 import org.asynchttpclient.RequestBuilder;
@@ -21,11 +19,6 @@ public class ServerRequestHandler extends SimpleChannelInboundHandler<Object> {
     protected ServerRequestHandler(AsyncHttpClient asyncHttpClient) {
         super();
         this.asyncHttpClient = asyncHttpClient;
-    }
-
-    @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        ctx.flush();
     }
 
     @Override
@@ -48,7 +41,6 @@ public class ServerRequestHandler extends SimpleChannelInboundHandler<Object> {
             send100Continue(ctx);
         }
         String destinationHost = request.headers().get("x-destination");
-        boolean keepAlive = HttpUtil.isKeepAlive(request);
         RequestBuilder externalRequestBuilder = Dsl.request(request.method().name(), "https://" + destinationHost + request.uri());
         if (request.headers().contains("Content-Length")) {
             externalRequestBuilder.setBody(bodyGenerator);
@@ -60,10 +52,8 @@ public class ServerRequestHandler extends SimpleChannelInboundHandler<Object> {
         ByteBuf content = httpContent.content();
 
         if (content == null || content.isReadable()) {
-            System.out.println("Content failed");
             return;
         }
-        System.out.println("Content");
         if (httpContent instanceof LastHttpContent) {
             bodyGenerator.feed(content, true);
         } else {
